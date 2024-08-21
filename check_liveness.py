@@ -15,7 +15,7 @@ tracemalloc.start()
 
 async def check_status(url) -> Tuple[Optional[str], Optional[int]]:
     try:
-        response = requests.get(url, timeout=5)
+        response = requests.get(url, timeout=15)
         # Consider the URL functional if the response code is in the 200-299 range
         if 200 <= response.status_code < 300:
             return "up", response.status_code
@@ -71,6 +71,6 @@ async def main() -> None:
         else:
             print("check bot health (code needs help)")
             alert_bot.post(content="check bot health (code needs help)")
-        await asyncio.sleep(10)
+        await asyncio.sleep(35)
 
 asyncio.run(main())
