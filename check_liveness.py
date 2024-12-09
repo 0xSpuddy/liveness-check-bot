@@ -40,37 +40,49 @@ async def main() -> None:
         current_time = datetime.now()
         formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
         status, code = await check_status(url)
-        if status == "up" and not good_sent_previous and not bad_sent_previous:
-            print(f"\U00002705{url} is up and functional (Status code: {code})")
-            alert_bot.post(content=f"\U00002705 {url} is UP at {formatted_time} \U00002705")
-            good_sent_previous = True
-            bad_sent_previous = False
-        elif status == "up" and good_sent_previous and not bad_sent_previous:
-            print(f"{url} is up and functional (Status code: {code})")
-            good_sent_previous = True
-            bad_sent_previous = False
-        elif status == "up" and not good_sent_previous and bad_sent_previous:
-            print(f"\U00002705{url} is BACK UP at {formatted_time} \U00002705")
-            alert_bot.post(content=f"\U00002705 {url} is BACK UP at {formatted_time}")
-            good_sent_previous = True
-            bad_sent_previous = False
-        elif status == "down" and not good_sent_previous and not bad_sent_previous:
-            print(f"\U0001F6A8{url} is down (Status code: {code})")
-            alert_bot.post(content=f"\U0001F6A8 {url} is DOWN at {formatted_time} (Status code: {code})")
-            good_sent_previous = False
-            bad_sent_previous = True
-        elif status == "down" and good_sent_previous and not bad_sent_previous:
-            print(f"\U0001F6A8{url} is down (Status code: {code})")
-            alert_bot.post(content=f"\U0001F6A8 {url} is DOWN at {formatted_time} (Status code: {code})")
-            good_sent_previous = False
-            bad_sent_previous = True
-        elif status == "down" and not good_sent_previous and bad_sent_previous:
-            print(f"{url} is down (Status code: {code})")
-            good_sent_previous = False
-            bad_sent_previous = True
+        if status == "up":
+            if not good_sent_previous and not bad_sent_previous:
+                print(f"\U00002705{url} is up and functional (Status code: {code})")
+                alert_bot.post(content=f"\U00002705 {url} is UP at {formatted_time} \U00002705")
+                good_sent_previous = True
+                bad_sent_previous = False
+            elif good_sent_previous and not bad_sent_previous:
+                print(f"{url} is up and functional (Status code: {code})")
+                good_sent_previous = True
+                bad_sent_previous = False
+            elif bad_sent_previous and not good_sent_previous:
+                print(f"\U00002705{url} is BACK UP at {formatted_time} \U00002705")
+                alert_bot.post(content=f"\U00002705 {url} is BACK UP at {formatted_time}")
+                good_sent_previous = True
+                bad_sent_previous = False
+            else:
+                print("site up logic error")
+        elif status == "down":
+            print("site not reached. trying again...")
+            await asyncio.sleep(30)
+            status, code = await check_status(url)
+            if status == "down":
+                if not good_sent_previous and not bad_sent_previous:
+                    print(f"\U0001F6A8{url} is down (Status code: {code})")
+                    alert_bot.post(content=f"\U0001F6A8 {url} is DOWN at {formatted_time} (Status code: {code})")
+                    good_sent_previous = False
+                    bad_sent_previous = True
+                elif good_sent_previous and not bad_sent_previous:
+                    print(f"\U0001F6A8{url} is down (Status code: {code})")
+                    alert_bot.post(content=f"\U0001F6A8 {url} is DOWN at {formatted_time} (Status code: {code})")
+                    good_sent_previous = False
+                    bad_sent_previous = True
+                elif bad_sent_previous and not good_sent_previous:
+                    print(f"{url} is down (Status code: {code})")
+                    good_sent_previous = False
+                    bad_sent_previous = True
+                else:
+                    print("site down logic error")
+            else:
+                continue
         else:
             print("check bot health (code needs help)")
             alert_bot.post(content="check bot health (code needs help)")
-        await asyncio.sleep(10)
+        await asyncio.sleep(60)
 
 asyncio.run(main())
